@@ -1,5 +1,5 @@
 // API Configuration
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://sportmanager-backend.onrender.com';
 
 // API Endpoints
 export const API_ENDPOINTS = {
