@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 import dotenv from 'dotenv'; // ✅ Import dotenv
 import connectDB from './config/database.js';
 import authRoutes from './routes/authRoutes.js';
@@ -15,27 +16,27 @@ import sessionRoutes from './routes/sessionRoutes.js';
 import subgroupRoutes from './routes/subgroupRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import attendanceRoutes from './routes/attendanceRoutes.js';
+// ✅ Only load dotenv locally (not in production on Render)
+if (process.env.NODE_ENV !== 'production') {
+  const backendEnvPath = path.join(path.dirname(fileURLToPath(import.meta.url)), '.env');
+  const rootEnvPath = path.join(path.dirname(path.dirname(fileURLToPath(import.meta.url))), '.env');
 
-// ✅ Load environment variables from backend/.env first, then fallback to repo root .env
-import fs from 'fs';
-const backendEnvPath = path.join(path.dirname(fileURLToPath(import.meta.url)), '.env');
-const rootEnvPath = path.join(path.dirname(path.dirname(fileURLToPath(import.meta.url))), '.env');
-
-if (fs.existsSync(backendEnvPath)) {
-  dotenv.config({ path: backendEnvPath });
-} else if (fs.existsSync(rootEnvPath)) {
-  dotenv.config({ path: rootEnvPath });
-} else {
-  // Default to process.cwd() if no specific .env found
-  dotenv.config();
+  if (fs.existsSync(backendEnvPath)) {
+    dotenv.config({ path: backendEnvPath });
+  } else if (fs.existsSync(rootEnvPath)) {
+    dotenv.config({ path: rootEnvPath });
+  } else {
+    dotenv.config();
+  }
 }
+
+
+// ✅ Connect to MongoDB after environment variables are ready
+connectDB();
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// ✅ Connect to MongoDB AFTER dotenv is loaded
-connectDB();
 
 // Middleware
 app.use(cors());
@@ -95,7 +96,6 @@ app.use('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 5001;
-
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
